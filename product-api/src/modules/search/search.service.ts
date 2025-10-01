@@ -22,6 +22,7 @@ export class SearchService {
     });
     const vec = emb.data[0].embedding as number[];
     const results = await this.store.search(vec, limit);
+    console.log(JSON.stringify(emb));
     return { results };
   }
 

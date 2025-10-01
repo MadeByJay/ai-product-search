@@ -1,0 +1,42 @@
+[
+  {
+    "id": "p1",
+    "title": "Modern Walnut Dining Table",
+    "description": "A sleek walnut dining table for 6.",
+    "price": 599,
+    "category": "Furniture",
+    "image_url": ""
+  },
+  {
+    "id": "p2",
+    "title": "Ergonomic Office Chair",
+    "description": "Mesh back, lumbar support, adjustable height.",
+    "price": 189,
+    "category": "Office",
+    "image_url": ""
+  },
+  {
+    "id": "p3",
+    "title": "Minimalist Floor Lamp",
+    "description": "Warm LED, matte black finish.",
+    "price": 89,
+    "category": "Lighting",
+    "image_url": ""
+  },
+  {
+    "id": "p4",
+    "title": "Solid Oak Bookshelf",
+    "description": "5-tier bookshelf, natural finish.",
+    "price": 279,
+    "category": "Furniture",
+    "image_url": ""
+  },
+  {
+    "id": "p5",
+    "title": "Standing Desk",
+    "description": "Electric height-adjustable standing desk.",
+    "price": 399,
+    "category": "Office",
+    "image_url": ""
+  }
+]
