@@ -9,3 +9,14 @@ export const API_PATHS = {
     daily: (days = 7) => `/analytics/daily?days=${days}`,
   },
 };
+
+export const CATEGORIES = [
+  "Furniture",
+  "Office",
+  "Lighting",
+  "Decor",
+  "Storage",
+  "Bedroom",
+  "Living Room",
+  "Dining",
+];

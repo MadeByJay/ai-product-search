@@ -1,8 +1,10 @@
 # TODO
 
 - [DONE] Need to add Navbar
-- Fix API not filtering price correctly
-- Add Analytics Dashboard
-- Add categories page
-- Profile and Cart?
+- [DONE] Fix API not filtering price correctly
+- [Done] Add Analytics Dashboard
+- [DONE] Add simple categories page
+  - Need to figure out a more fleshed out page
+- Profile feature
+- Cart feature
 - Add observability and logging
