@@ -16,13 +16,13 @@ export class SearchService {
 
   async search(query: string, limit: number) {
     if (!query) return { results: [], error: 'query required' };
+    console.log(query);
     const emb = await this.openai.embeddings.create({
       model: process.env.EMBED_MODEL || 'text-embedding-3-small',
       input: query,
     });
     const vec = emb.data[0].embedding as number[];
     const results = await this.store.search(vec, limit);
-    console.log(JSON.stringify(emb));
     return { results };
   }
 
