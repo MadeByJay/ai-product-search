@@ -10,7 +10,7 @@ type SearchBody = {
 
 @Controller()
 export class SearchController {
-  constructor(private readonly svc: SearchService) {}
+  constructor(private readonly svc: SearchService) { }
 
   @Post('search')
   async search(@Body() body: SearchBody) {
