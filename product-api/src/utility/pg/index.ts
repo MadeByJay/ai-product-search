@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool } from 'pg';
 
 export type Product = {
   id: string;
@@ -34,7 +34,7 @@ export class PgVectorStore {
 
   async upsertProduct(p: Product, embedding: number[]): Promise<void> {
     // pgvector expects a literal like: '[0.1,0.2,...]'
-    const vectorString = `[${embedding.join(",")}]`;
+    const vectorString = `[${embedding.join(',')}]`;
     await this.pool.query(
       `INSERT INTO products (id,title,description,price,category,image_url,embedding)
        VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -58,13 +58,47 @@ export class PgVectorStore {
   }
 
   async search(queryEmbedding: number[], limit = 10) {
-    const vectorString = `[${queryEmbedding.join(",")}]`;
+    const vectorString = `[${queryEmbedding.join(',')}]`;
     const { rows } = await this.pool.query(
       `SELECT id, title, description, price, category, image_url
        FROM products
        ORDER BY embedding <-> $1
        LIMIT $2`,
       [vectorString, limit],
+    );
+    return rows as Product[];
+  }
+
+  async searchWithFilters(
+    queryEmbedding: number[],
+    filters: { priceMax?: number; category?: string },
+    limit = 10,
+  ) {
+    const vectorString = `[${queryEmbedding.join(',')}]`;
+    const params: any[] = [vectorString];
+    const where: string[] = [];
+
+    if (filters.priceMax != null) {
+      params.push(filters.priceMax);
+      where.push(`price <= $${params.length}`);
+    }
+    if (filters.category) {
+      params.push(filters.category);
+      where.push(`category = $${params.length}`);
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    params.push(limit);
+
+    const { rows } = await this.pool.query(
+      `
+      SELECT id, title, description, price, category, image_url
+      FROM products
+      ${whereSql}
+      ORDER BY embedding <-> $1
+      LIMIT $${params.length}
+      `,
+      params,
     );
     return rows as Product[];
   }

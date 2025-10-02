@@ -35,13 +35,20 @@ function composeQuery(baseQ: string, category?: string, priceMax?: string) {
 async function fetchProducts(
   query: string,
   limit: number,
+  opts?: { priceMax?: number; category?: string },
 ): Promise<SearchResponse> {
   console.log(query);
   try {
     const res = await fetch(`${API_BASE}/search`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query, limit }),
+      body: JSON.stringify({
+        query,
+        limit,
+        // NEW: structured filters
+        priceMax: opts?.priceMax,
+        category: opts?.category,
+      }),
     });
 
     if (!res.ok) {
@@ -83,7 +90,10 @@ export default async function Page({
     Number(Array.isArray(limitParam) ? limitParam[0] : limitParam) || 24;
 
   const composed = composeQuery(q, category, priceMaxRaw);
-  const { results, meta, error } = await fetchProducts(composed, limit);
+  const { results, meta, error } = await fetchProducts(composed, limit, {
+    priceMax,
+    category,
+  });
 
   return (
     <div className="space-y-4">

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PgVectorStore } from '../../utility/pg';
 import OpenAI from 'openai';
 
+type Filters = { priceMax?: number; category?: string };
+
 @Injectable()
 export class SearchService {
   private store: PgVectorStore;
@@ -14,16 +16,26 @@ export class SearchService {
     this.store.init();
   }
 
-  async search(query: string, limit: number) {
+  async search(query: string, limit: number, filters?: Filters) {
     if (!query) return { results: [], error: 'query required' };
     console.log(query);
+    const t0 = Date.now();
+
     const emb = await this.openai.embeddings.create({
       model: process.env.EMBED_MODEL || 'text-embedding-3-small',
       input: query,
     });
     const vec = emb.data[0].embedding as number[];
-    const results = await this.store.search(vec, limit);
-    return { results };
+
+    // NEW: structured filters
+    const results = await this.store.searchWithFilters(
+      vec,
+      filters ?? {},
+      limit,
+    );
+
+    const latency = Date.now() - t0;
+    return { results, meta: { latency_ms: latency, count: results.length } };
   }
 
   async similar(id: string, limit: number) {
