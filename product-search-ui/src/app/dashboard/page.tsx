@@ -1,5 +1,5 @@
 import { getDailyCounts, getSummary, getTopQueries } from "../lib/api";
-import { DailyQueryCount, Summary, TopQuery } from "../lib/types";
+import { DailyQueryCount } from "../lib/types";
 
 function BarChart({ data }: { data: DailyQueryCount[] }) {
   const max = Math.max(

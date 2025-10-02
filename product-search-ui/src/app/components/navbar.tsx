@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import SearchBox from "./search-box";
 
 export default function Navbar() {
   const sp = useSearchParams();
@@ -28,13 +29,7 @@ export default function Navbar() {
           method="get"
           className="mx-4 hidden flex-1 max-w-md sm:flex items-stretch gap-2"
         >
-          <input
-            type="text"
-            name="q"
-            defaultValue={q}
-            placeholder="Search with AI..."
-            className="w-full rounded-l-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+          <SearchBox />
           {/* Preserve active filters */}
           {category ? (
             <input type="hidden" name="category" value={category} />
@@ -49,13 +44,13 @@ export default function Navbar() {
           >
             Search
           </button>
-          <Link
-            href={clearHref}
-            className="rounded-md border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
-            aria-label="Clear filters (keep search text)"
-          >
-            Clear
-          </Link>
+          {/* <Link */}
+          {/*   href={clearHref} */}
+          {/*   className="rounded-md border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50" */}
+          {/*   aria-label="Clear filters (keep search text)" */}
+          {/* > */}
+          {/*   Clear */}
+          {/* </Link> */}
         </form>
 
         {/* Nav Links */}

@@ -14,6 +14,15 @@ export type SearchResponse = {
   error?: string;
 };
 
+// useSearch
+export type UseSearchOpts = {
+  initialQuery?: string;
+  delay?: number;
+  limit?: number;
+  minLength?: number; // NEW
+  compose?: (q: string, category?: string, priceMax?: string) => string;
+};
+
 // Analytics
 export type Summary = {
   total_queries: number;

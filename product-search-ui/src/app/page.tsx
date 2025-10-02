@@ -3,7 +3,6 @@ import HeroBanner from "../app/components/hero-banner";
 import FiltersSidebar from "./components/filters-sidebar";
 import ProductCard from "./components/product-card";
 import { Product, SearchResponse } from "./lib/types";
-import { API_BASE } from "./lib/constants";
 import { searchProducts } from "./lib/api";
 
 /**
@@ -40,7 +39,7 @@ export default async function Page({
 
   const priceMaxRaw = pick(priceMaxParam);
 
-  const priceMax = priceMaxRaw ? Number(priceMaxRaw) : 600;
+  const priceMax = priceMaxRaw ? Number(priceMaxRaw) : undefined;
 
   const limit = Number() || 24;
 
