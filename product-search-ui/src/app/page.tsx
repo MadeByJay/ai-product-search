@@ -2,23 +2,9 @@ import Link from "next/link";
 import HeroBanner from "../app/components/hero-banner";
 import FiltersSidebar from "./components/filters-sidebar";
 import ProductCard from "./components/product-card";
-
-type Product = {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  image_url?: string;
-};
-
-type SearchResponse = {
-  results: Product[];
-  meta?: { latency_ms: number; count: number };
-  error?: string;
-};
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
+import { Product, SearchResponse } from "./lib/types";
+import { API_BASE } from "./lib/constants";
+import { searchProducts } from "./lib/api";
 
 /**
  * Compose a natural language query for the embeddings service while
@@ -32,39 +18,10 @@ function composeQuery(baseQ: string, category?: string, priceMax?: string) {
   return parts.join(". ");
 }
 
-async function fetchProducts(
-  query: string,
-  limit: number,
-  opts?: { priceMax?: number; category?: string },
-): Promise<SearchResponse> {
-  console.log(query);
-  try {
-    const res = await fetch(`${API_BASE}/search`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        query,
-        limit,
-        // NEW: structured filters
-        priceMax: opts?.priceMax,
-        category: opts?.category,
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      return { results: [], error: `API ${res.status}: ${text}` };
-    }
-    return (await res.json()) as SearchResponse;
-  } catch (err: any) {
-    return { results: [], error: err?.message || "Network error" };
-  }
-}
-
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: Promise<{ [key: string]: string | string[] }>;
 }) {
   // URL params from navbar/hero/categories
   const {
@@ -74,26 +31,32 @@ export default async function Page({
     limit: limitParam,
   } = await searchParams;
 
-  const q =
-    (Array.isArray(query) ? query[0] : query) || "ergonomic office chair";
-  const category = Array.isArray(categoryParam)
-    ? categoryParam[0]
-    : categoryParam;
+  const pick = (value?: string | string[]) =>
+    (Array.isArray(value) ? value[0] : value) ?? "";
 
-  const priceMaxRaw = Array.isArray(priceMaxParam)
-    ? priceMaxParam[0]
-    : priceMaxParam;
+  const q = pick(query);
+
+  const category = pick(categoryParam);
+
+  const priceMaxRaw = pick(priceMaxParam);
 
   const priceMax = priceMaxRaw ? Number(priceMaxRaw) : 600;
 
-  const limit =
-    Number(Array.isArray(limitParam) ? limitParam[0] : limitParam) || 24;
+  const limit = Number() || 24;
 
   const composed = composeQuery(q, category, priceMaxRaw);
-  const { results, meta, error } = await fetchProducts(composed, limit, {
-    priceMax,
-    category,
-  });
+
+  let results: Product[] = [];
+  let error: string = "";
+  let meta: SearchResponse["meta"];
+
+  try {
+    const res = await searchProducts(composed, limit, { priceMax, category });
+    results = res.results;
+    meta = res.meta;
+  } catch (err: any) {
+    error = err?.message || "Search Failed";
+  }
 
   return (
     <div className="space-y-4">

@@ -1,12 +1,5 @@
+import { getDailyCounts, getSummary, getTopQueries } from "../lib/api";
 import { DailyQueryCount, Summary, TopQuery } from "../lib/types";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
-
-async function fetchJSON<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.json();
-}
 
 function BarChart({ data }: { data: DailyQueryCount[] }) {
   const max = Math.max(
@@ -56,12 +49,10 @@ function BarChart({ data }: { data: DailyQueryCount[] }) {
 
 export default async function Dashboard() {
   const [summary, top, dailyQueryCount] = await Promise.all([
-    fetchJSON<Summary>("/analytics/summary"),
-    fetchJSON<{ items: TopQuery[] }>("/analytics/top-queries?limit=10"),
-    fetchJSON<{ items: DailyQueryCount[] }>("/analytics/daily?days=7"),
+    getSummary(),
+    getTopQueries(10),
+    getDailyCounts(7),
   ]);
-
-  console.log("top--------------------------", top);
 
   return (
     <div className="space-y-6">
@@ -89,7 +80,7 @@ export default async function Dashboard() {
 
       {/* Daily chart */}
       <section>
-        <BarChart data={dailyQueryCount.items} />
+        <BarChart data={dailyQueryCount} />
       </section>
 
       {/* Top queries table */}
@@ -108,7 +99,7 @@ export default async function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {top.items.map((topQuery) => (
+              {top.map((topQuery) => (
                 <tr key={topQuery.query} className="border-t">
                   <td className="px-3 py-2">{topQuery.query}</td>
                   <td className="px-3 py-2">{topQuery.hits}</td>
