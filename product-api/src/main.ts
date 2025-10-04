@@ -10,6 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'] as any,
   });
+  app.setGlobalPrefix('api');
   app.use(cors());
   await app.listen(Number(env.API_PORT));
   baseLogger.info(`API listening on http://localhost:${env.API_PORT}`);

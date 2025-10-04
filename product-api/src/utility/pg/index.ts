@@ -29,6 +29,7 @@ export class PgVectorStore {
         embedding vector(1536)
       );
     `);
+
     return true;
   }
 
@@ -113,5 +114,50 @@ export class PgVectorStore {
       [id, limit],
     );
     return rows as Product[];
+  }
+
+  async getSavedItems(userId: string) {
+    const { rows } = await this.pool.query(
+      `SELECT p.* FROM saved_items s
+       JOIN products p ON p.id = s.product_id
+       WHERE s.user_id = $1
+       ORDER BY s.created_at DESC`,
+      [userId],
+    );
+    return rows;
+  }
+
+  async toggleSavedItem(userId: string, productId: string) {
+    await this.pool.query(
+      `INSERT INTO saved_items(user_id, product_id)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id, product_id)
+       DO DELETE WHERE saved_items.user_id = $1 AND saved_items.product_id = $2`,
+      [userId, productId],
+    );
+  }
+
+  async getPreferences(userId: string) {
+    const { rows } = await this.pool.query(
+      `SELECT * FROM user_preferences WHERE user_id = $1`,
+      [userId],
+    );
+    return rows[0] || {};
+  }
+
+  async updatePreferences(userId: string, prefs: any) {
+    const fields = ['default_category', 'price_max', 'page_limit', 'theme'];
+    const updates = fields.filter((field) => prefs[field] !== undefined);
+
+    if (updates.length === 0) return;
+
+    const set = updates.map((field, i) => `${field} = $${i + 2}`).join(', ');
+    await this.pool.query(
+      `INSERT INTO user_preferences(user_id, ${updates.join(', ')})
+       VALUES ($1, ${updates.map((_, i) => `$${i + 2}`).join(', ')})
+       ON CONFLICT (user_id)
+       DO UPDATE SET ${set}, updated_at = now()`,
+      [userId, ...updates.map((field) => prefs[field])],
+    );
   }
 }

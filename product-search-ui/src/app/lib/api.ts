@@ -5,6 +5,8 @@ import {
   TopQuery,
   DailyQueryCount,
   SearchFilters,
+  SavedItem,
+  UserPreferences,
 } from "./types";
 
 const fetchOpts: RequestInit = {
@@ -63,4 +65,31 @@ export async function getDailyCounts(
     { signal },
   );
   return data.items;
+}
+
+export async function getSavedItems(userId: string): Promise<SavedItem[]> {
+  return httpJson<SavedItem[]>(`${API_BASE}/profile/${userId}/saved`);
+}
+
+export async function toggleSaved(userId: string, productId: string) {
+  return httpJson(`${API_BASE}/profile/${userId}/saved`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ productId }),
+  });
+}
+
+export async function getPreferences(userId: string): Promise<UserPreferences> {
+  return httpJson<UserPreferences>(`${API_BASE}/profile/${userId}/preferences`);
+}
+
+export async function updatePreferences(
+  userId: string,
+  prefs: UserPreferences,
+) {
+  return httpJson(`${API_BASE}/profile/${userId}/preferences`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(prefs),
+  });
 }

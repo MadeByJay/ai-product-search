@@ -45,3 +45,13 @@ export type SearchFilters = {
   priceMax?: number;
   category?: string;
 };
+
+// Profiles
+export type UserPreferences = {
+  default_category?: string;
+  price_max?: number;
+  page_limit?: number;
+  theme?: string;
+};
+
+export type SavedItem = Product & { created_at?: string };

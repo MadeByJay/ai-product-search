@@ -1,5 +1,11 @@
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001/api";
+
+if (!API_BASE) {
+  throw new Error(
+    "NEXT_PUBLIC_API_BASE is not set. Define it in .env.local (e.g. http://localhost:3001 or http://localhost:3001/api).",
+  );
+}
 
 export const API_PATHS = {
   search: "/search",
@@ -20,3 +26,5 @@ export const CATEGORIES = [
   "Living Room",
   "Dining",
 ];
+
+export const DEMO_USER = "00000000-0000-0000-0000-000000000001"; // demo user id
