@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "AI Product Search",
@@ -25,9 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white text-gray-500">
-        <Navbar />
-        <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+      <body className="min-h-screen bg-white text-gray-900">
+        <Providers>
+          <Navbar />
+          <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+        </Providers>
       </body>
     </html>
   );

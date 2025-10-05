@@ -22,7 +22,7 @@ async function getCurrentParams() {
 export default async function CategoriesPage() {
   const { q: query, priceMax, limit } = await getCurrentParams();
 
-  const baseParams = (extra?: Record<string, string | undefined>) => {
+  const baseParams = (extra?: Record<string, string>) => {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
     if (priceMax) params.set("priceMax", priceMax);

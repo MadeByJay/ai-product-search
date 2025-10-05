@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { SyncUserDto } from './dto/sync-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -19,5 +20,11 @@ export class UsersController {
       ...dto,
       defaults: { page_limit: 24, theme: 'light' },
     });
+  }
+
+  @Post('sync')
+  async sync(@Body() dto: SyncUserDto) {
+    console.log('hit');
+    return this.svc.syncUser(dto); // { id, email, name }
   }
 }

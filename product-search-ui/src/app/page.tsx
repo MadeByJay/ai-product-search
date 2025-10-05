@@ -4,6 +4,7 @@ import FiltersSidebar from "./components/filters-sidebar";
 import ProductCard from "./components/product-card";
 import { Product, SearchResponse } from "./lib/types";
 import { searchProducts } from "./lib/api";
+import { getOrSyncUserId } from "./lib/user";
 
 /**
  * Compose a natural language query for the embeddings service while
@@ -22,6 +23,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] }>;
 }) {
+  const userId = await getOrSyncUserId(); // fetch user id once on server
   // URL params from navbar/hero/categories
   const {
     q: query,
@@ -64,7 +66,7 @@ export default async function Page({
 
       {/* Main two-column layout */}
       <div className="flex gap-6">
-        {/* Sidebar (collapsible would be a later enhancement) */}
+        {/* Sidebar */}
 
         <FiltersSidebar
           q={q}
@@ -128,7 +130,7 @@ export default async function Page({
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {results.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} userId={userId} />
               ))}
             </div>
           )}

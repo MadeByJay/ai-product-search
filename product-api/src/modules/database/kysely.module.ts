@@ -3,7 +3,7 @@ import { Kysely, PostgresDialect, ColumnType, Generated } from 'kysely';
 import pg from 'pg';
 
 // Helper for a timestamp that is selected as Date, optional on insert/update
-type Timestamp = ColumnType<Date, Date | undefined, Date | undefined>;
+type Timestamp = ColumnType<Date, Date | null, Date | null>;
 
 // DI tokens
 export const KYSELY_DB = 'KYSELY_DB';

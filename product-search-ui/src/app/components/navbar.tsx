@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SearchBox from "./search-box";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Navbar() {
-  const sp = useSearchParams();
-  const q = sp.get("q") ?? "";
-  const category = sp.get("category") ?? "";
-  const priceMax = sp.get("priceMax") ?? "";
-  const limit = sp.get("limit") ?? "24";
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
+
+  const q = searchParams.get("q") ?? "";
+  const category = searchParams.get("category") ?? "";
+  const priceMax = searchParams.get("priceMax") ?? "";
+  const limit = searchParams.get("limit") ?? "24";
 
   const clearHref = q
     ? `/?q=${encodeURIComponent(q)}&limit=${limit}`
@@ -22,7 +25,6 @@ export default function Navbar() {
         <Link href="/" className="text-xl font-bold text-orange-500">
           AI Shop
         </Link>
-
         {/* Search Bar (preserves filters) */}
         <form
           action="/"
@@ -44,15 +46,7 @@ export default function Navbar() {
           >
             Search
           </button>
-          {/* <Link */}
-          {/*   href={clearHref} */}
-          {/*   className="rounded-md border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50" */}
-          {/*   aria-label="Clear filters (keep search text)" */}
-          {/* > */}
-          {/*   Clear */}
-          {/* </Link> */}
         </form>
-
         {/* Nav Links */}
         <nav className="flex items-center gap-4 text-sm font-medium">
           <Link
@@ -68,12 +62,27 @@ export default function Navbar() {
             Profile
           </Link>
           <Link
-            href="/cart"
-            className="rounded-md bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+            href={clearHref}
+            className="rounded-md border border-blue-500 px-3 py-1 text-blue-600 hover:bg-blue-50"
           >
-            Cart
+            Clear
           </Link>
-        </nav>
+          {session?.user ? (
+            <button
+              className="rounded-md bg-gray-800 px-3 py-1 text-white"
+              onClick={() => signOut()}
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              className="rounded-md bg-blue-500 px-3 py-1 text-white"
+              onClick={() => signIn()}
+            >
+              Sign in
+            </button>
+          )}
+        </nav>{" "}
       </div>
     </header>
   );

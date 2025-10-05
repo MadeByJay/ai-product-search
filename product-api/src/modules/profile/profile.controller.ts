@@ -1,21 +1,21 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ProfileService } from './profile.service';
+import { ToggleSavedDto } from './dto/toggle-saved.dto';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly svc: ProfileService) { }
 
-  // For now pass userId as a path param; later wire to NextAuth session
+  // For now pass userId as a path param
+  // TODO - wire to NextAuth session
   @Get(':userId/saved')
   getSaved(@Param('userId') userId: string) {
     return this.svc.getSavedItems(userId);
   }
 
   @Post(':userId/saved')
-  toggleSaved(
-    @Param('userId') userId: string,
-    @Body() body: { productId: string },
-  ) {
+  toggleSaved(@Param('userId') userId: string, @Body() body: ToggleSavedDto) {
     return this.svc.toggleSavedItem(userId, body.productId);
   }
 
@@ -25,7 +25,10 @@ export class ProfileController {
   }
 
   @Post(':userId/preferences')
-  updatePrefs(@Param('userId') userId: string, @Body() prefs: any) {
+  updatePrefs(
+    @Param('userId') userId: string,
+    @Body() prefs: UpdatePreferencesDto,
+  ) {
     return this.svc.updatePreferences(userId, prefs);
   }
 }

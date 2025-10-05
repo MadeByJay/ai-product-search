@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, sql, Transaction } from 'kysely';
 import { DB } from '../../database/kysely.module';
 
-const KYSELY_DB = 'KYSELY_DB'; // adjust if you exported a constant elsewhere
+const KYSELY_DB = 'KYSELY_DB';
 
 @Injectable()
 export class AnalyticsRepository {

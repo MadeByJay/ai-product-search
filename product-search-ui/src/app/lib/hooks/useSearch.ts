@@ -6,8 +6,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { searchProducts } from "../api";
 
 /**
- * Compose a natural language query for the embeddings service while
- * honoring simple filters coming from the UI (category, priceMax).
+ * Client-only callback that composes a natural-language query
+ * from UI inputs. This is not a Server Action.
  */
 function composeQuery(baseQ: string, category?: string, priceMax?: string) {
   const parts: string[] = [];
@@ -25,7 +25,7 @@ export function useSearch({
   initialQuery = "",
   delay = 300,
   limit = 8,
-  minLength = 2, // NEW
+  minLength = 2,
   compose = composeQuery,
 }: UseSearchOpts = {}) {
   const sp = useSearchParams();
@@ -36,7 +36,7 @@ export function useSearch({
   const timer = useRef<number | null>(null);
   const controller = useRef<AbortController | null>(null);
 
-  const category = sp.get("category") ?? undefined;
+  const category = sp.get("category")!;
   const priceMaxRaw = sp.get("priceMax") ?? undefined;
   const pageLimit = Number(sp.get("limit") ?? "") || limit;
   const composed = useMemo(

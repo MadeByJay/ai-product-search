@@ -147,7 +147,7 @@ export class PgVectorStore {
 
   async updatePreferences(userId: string, prefs: any) {
     const fields = ['default_category', 'price_max', 'page_limit', 'theme'];
-    const updates = fields.filter((field) => prefs[field] !== undefined);
+    const updates = fields.filter((field) => prefs[field] !== null);
 
     if (updates.length === 0) return;
 
