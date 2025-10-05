@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { ToggleSavedDto } from './dto/toggle-saved.dto';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
+import { InternalProxyGuard } from 'src/common/guards/internal.proxy.guard';
 
+@UseGuards(InternalProxyGuard)
 @Controller('profile')
 export class ProfileController {
-  constructor(private readonly svc: ProfileService) { }
+  constructor(private readonly svc: ProfileService) {}
 
   // For now pass userId as a path param
   // TODO - wire to NextAuth session

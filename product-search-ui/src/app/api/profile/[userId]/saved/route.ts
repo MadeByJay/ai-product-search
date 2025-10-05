@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/route";
-import { API_BASE } from "@/app/lib/constants";
+import { API_BASE, INTERNAL_SHARED_SECRET } from "@/app/lib/constants";
+import { forbidIfMismatchedUser } from "@/app/api/_authz";
+import { buildInternalSignatureHeaders } from "@/app/api/_internal-sign";
 
 async function ensureSession() {
   const session = await getServerSession(authOptions);
@@ -23,58 +25,79 @@ function ensureUserIdMatches(_session: any, _routeUserId: string) {
 }
 
 export async function GET(
-  _req: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ userId: string }> },
 ) {
-  const { session, res } = await ensureSession();
-  if (!session) return res;
-
-  const { userId } = await context.params;
-
-  if (ensureUserIdMatches(session, userId) !== 200) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const response = await fetch(`${API_BASE}/profile/${userId}/saved`, {
+  const { userId } = await context.params;
+  const forbid = forbidIfMismatchedUser(session, userId);
+  if (forbid) return forbid;
+
+  const pathOnly = `/profile/${userId}/saved`;
+  const signatureHeaders = buildInternalSignatureHeaders({
+    method: "GET",
+    path: pathOnly,
+    body: "",
+    userId,
+    sharedSecret: INTERNAL_SHARED_SECRET,
+  });
+
+  const upstreamResponse = await fetch(`${API_BASE}${pathOnly}`, {
+    method: "GET",
+    headers: { ...signatureHeaders },
     cache: "no-store",
   });
-  const text = await response.text();
 
-  return new NextResponse(text, {
-    status: response.status,
+  const upstreamBodyText = await upstreamResponse.text();
+  return new NextResponse(upstreamBodyText, {
+    status: upstreamResponse.status,
     headers: {
       "content-type":
-        response.headers.get("content-type") ?? "application/json",
+        upstreamResponse.headers.get("content-type") ?? "application/json",
     },
   });
 }
 
 export async function POST(
-  req: NextRequest,
+  request: NextRequest,
   context: { params: Promise<{ userId: string }> },
 ) {
-  const { session, res } = await ensureSession();
-  if (!session) return res;
-
-  const { userId } = await context.params;
-
-  if (ensureUserIdMatches(session, userId) !== 200) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const response = await fetch(`${API_BASE}/profile/${userId}/saved`, {
+  const { userId } = await context.params;
+  const forbid = forbidIfMismatchedUser(session, userId);
+  if (forbid) return forbid;
+
+  const body = await request.json();
+
+  const pathOnly = `/profile/${userId}/saved`;
+  const signatureHeaders = buildInternalSignatureHeaders({
     method: "POST",
-    headers: { "content-type": "application/json" },
+    path: pathOnly,
+    body,
+    userId,
+    sharedSecret: INTERNAL_SHARED_SECRET,
+  });
+
+  const upstreamResponse = await fetch(`${API_BASE}${pathOnly}`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...signatureHeaders },
     body: JSON.stringify(body),
   });
-  const text = await response.text();
 
-  return new NextResponse(text, {
-    status: response.status,
+  const upstreamBodyText = await upstreamResponse.text();
+  return new NextResponse(upstreamBodyText, {
+    status: upstreamResponse.status,
     headers: {
       "content-type":
-        response.headers.get("content-type") ?? "application/json",
+        upstreamResponse.headers.get("content-type") ?? "application/json",
     },
   });
 }

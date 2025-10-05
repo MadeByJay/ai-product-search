@@ -8,6 +8,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 export default function Navbar() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  console.log("session---------", session);
 
   const q = searchParams.get("q") ?? "";
   const category = searchParams.get("category") ?? "";

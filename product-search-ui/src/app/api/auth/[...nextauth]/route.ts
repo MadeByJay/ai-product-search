@@ -16,20 +16,56 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // On first login, enrich token with profile basics
+      // Enrich basic fields when sign-in occurs
       if (account && profile) {
-        token.name = profile.name ?? token.name;
+        token.name = (profile as any).name ?? token.name;
         token.picture = (profile as any).picture ?? token.picture;
         token.email = (profile as any).email ?? token.email;
       }
+
+      // If we have an email but no userId, sync with the API to get a stable user id
+      const email = token.email as string | undefined;
+      if (email && !(token as any).userId) {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE;
+
+        if (!apiBase) {
+          console.warn(
+            "[auth] NEXT_PUBLIC_API_BASE is not set; cannot sync userId",
+          );
+          return token;
+        }
+
+        try {
+          const response = await fetch(`${apiBase}/users/sync`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              email,
+              name: token.name,
+              avatar_url: token.picture,
+            }),
+          });
+
+          if (response.ok) {
+            const data = (await response.json()) as { id: string };
+            (token as any).userId = data.id;
+          } else {
+            console.warn("[auth] users/sync responded", response.status);
+          }
+        } catch (error) {
+          console.warn("[auth] users/sync failed", (error as Error)?.message);
+        }
+      }
+
       return token;
     },
+
     async session({ session, token }) {
-      // Expose basic fields, user_id will be added by sync call below
-      session.user = session.user || {};
-      session.user.name = token.name as string;
-      session.user.image = token.picture as string;
-      session.user.email = token.email as string;
+      // Surface userId to the session
+      (session.user as any) = {
+        ...session.user,
+        id: (token as any).userId ?? null,
+      };
       return session;
     },
   },

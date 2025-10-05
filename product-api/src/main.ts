@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import * as bodyParser from 'body-parser';
 import { AppModule } from './app.module';
 import 'reflect-metadata';
 import { logger as baseLogger } from './utility/logger';
@@ -15,6 +16,13 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.use(cors());
+  app.use(
+    bodyParser.json({
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(Number(env.API_PORT));

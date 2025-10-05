@@ -2,6 +2,7 @@ export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001/api";
 export const NEXTAUTH_API_BASE =
   process.env.NEXTAUTH_URL || "http://localhost:3000";
+export const INTERNAL_SHARED_SECRET = process.env.INTERNAL_SHARED_SECRET!;
 
 if (!API_BASE) {
   throw new Error(

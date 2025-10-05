@@ -30,7 +30,6 @@ export default function FiltersSidebar({
   currentPriceMax,
   limit = 24,
 }: Props) {
-  console.log(q, currentCategory, currentPriceMax, limit);
   // Initialize slider to match current URL or default
   const [price, setPrice] = useState<number>(currentPriceMax ?? 600);
   const minPrice = 50;
