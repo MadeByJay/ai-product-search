@@ -24,4 +24,9 @@ export class ProfileService {
   updatePreferences(userId: string, prefs: any) {
     return this.userPrefs.upsert(userId, prefs);
   }
+
+  async checkSaved(userId: string, productIds: string[]): Promise<string[]> {
+    if (!productIds || productIds.length === 0) return [];
+    return this.savedItems.getExistingForUser(userId, productIds);
+  }
 }

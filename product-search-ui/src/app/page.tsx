@@ -1,10 +1,11 @@
-import Link from "next/link";
+import { headers } from "next/headers";
 import HeroBanner from "../app/components/hero-banner";
 import FiltersSidebar from "./components/filters-sidebar";
 import ProductCard from "./components/product-card";
 import { Product, SearchResponse } from "./lib/types";
 import { searchProducts } from "./lib/api";
 import { getOrSyncUserId } from "./lib/user";
+import { getRequestOrigin } from "./lib/origin";
 
 /**
  * Compose a natural language query for the embeddings service while
@@ -12,10 +13,46 @@ import { getOrSyncUserId } from "./lib/user";
  */
 function composeQuery(baseQ: string, category?: string, priceMax?: string) {
   const parts: string[] = [];
+
   if (baseQ) parts.push(baseQ);
   if (category) parts.push(`Category: ${category}`);
   if (priceMax) parts.push(`Price under $${priceMax}`);
+
   return parts.join(". ");
+}
+
+async function fetchSavedIdSetByIds(
+  userId: string,
+  productIds: string[],
+): Promise<Set<string>> {
+  if (!productIds.length) return new Set();
+
+  const origin = await getRequestOrigin();
+  const headerStore = await headers();
+  const cookieHeader = headerStore.get("cookie") ?? "";
+
+  const params = new URLSearchParams({ ids: productIds.join(",") });
+
+  const response = await fetch(
+    `${origin}/api/profile/${userId}/saved/check?${params.toString()}`,
+    {
+      headers: { cookie: cookieHeader },
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) return new Set();
+
+  const { saved } = (await response.json()) as { saved: string[] };
+
+  return new Set(saved);
+}
+function readParam(
+  searchParams: Record<string, string | string[] | null>,
+  name: string,
+): string {
+  const value = searchParams[name];
+  return (Array.isArray(value) ? value[0] : value) ?? "";
 }
 
 export default async function Page({
@@ -23,40 +60,57 @@ export default async function Page({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] }>;
 }) {
-  const userId = await getOrSyncUserId(); // fetch user id once on server
   // URL params from navbar/hero/categories
-  const {
-    q: query,
-    category: categoryParam,
-    priceMax: priceMaxParam,
-    limit: limitParam,
-  } = await searchParams;
+  const sp = await searchParams;
 
-  const pick = (value?: string | string[]) =>
-    (Array.isArray(value) ? value[0] : value) ?? "";
+  const userId = await getOrSyncUserId(); // null if unauthenticated
 
-  const q = pick(query);
+  const queryText = readParam(sp, "q");
+  const category = readParam(sp, "category");
+  const priceMaxRaw = readParam(sp, "priceMax");
+  const limit = Math.max(1, Number(readParam(sp, "limit")) || 24);
 
-  const category = pick(categoryParam);
+  const pageRaw = readParam(sp, "page");
+  const page = Math.max(1, Number(pageRaw) || 1);
+  const offset = (page - 1) * limit;
 
-  const priceMaxRaw = pick(priceMaxParam);
-
+  // Compose query for embeddings + send filters with offset
+  const composed = composeQuery(queryText, category, priceMaxRaw);
   const priceMax = priceMaxRaw ? Number(priceMaxRaw) : undefined;
 
-  const limit = Number() || 24;
+  // Fetch search results (and saved IDs, if logged in) in parallel
+  const searchResponse = await searchProducts(
+    composed,
+    limit,
+    {
+      priceMax,
+      category,
+    },
+    null,
+    offset,
+  );
 
-  const composed = composeQuery(q, category, priceMaxRaw);
+  const { results, error, meta } = searchResponse;
+  const visibleIds = results.map((product) => product.id);
 
-  let results: Product[] = [];
-  let error: string = "";
-  let meta: SearchResponse["meta"];
+  const savedIdSet = userId
+    ? await fetchSavedIdSetByIds(userId, visibleIds)
+    : await Promise.resolve(new Set<string>()); // TODO - double check this
 
-  try {
-    const res = await searchProducts(composed, limit, { priceMax, category });
-    results = res.results;
-    meta = res.meta;
-  } catch (err: any) {
-    error = err?.message || "Search Failed";
+  const hasPrev = page > 1;
+  const hasNext = results.length === limit;
+
+  function buildPageHref(nextPage: number) {
+    const params = new URLSearchParams();
+
+    if (queryText) params.set("q", queryText);
+    if (category) params.set("category", category);
+    if (priceMaxRaw) params.set("priceMax", priceMaxRaw);
+
+    params.set("limit", String(limit));
+    params.set("page", String(nextPage));
+
+    return "/?" + params.toString();
   }
 
   return (
@@ -69,7 +123,7 @@ export default async function Page({
         {/* Sidebar */}
 
         <FiltersSidebar
-          q={q}
+          q={queryText}
           currentCategory={category}
           currentPriceMax={priceMax}
           limit={limit}
@@ -80,11 +134,11 @@ export default async function Page({
           {/* Search summary / status line */}
           <div className="mb-3 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              {q || category || priceMax ? (
+              {queryText || category || priceMax ? (
                 <>
                   Showing results for&nbsp;
                   <span className="font-medium text-gray-900">
-                    {q || "your query"}
+                    {queryText || "your query"}
                   </span>
                   {category ? (
                     <>
@@ -128,11 +182,47 @@ export default async function Page({
               No results yet. Try a broader prompt or remove filters.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {results.map((p) => (
-                <ProductCard key={p.id} product={p} userId={userId} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {results.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    userId={userId}
+                    initialSaved={savedIdSet.has(product.id)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <div className="mt-6 flex items-center justify-between">
+                <a
+                  aria-disabled={!hasPrev}
+                  href={hasPrev ? buildPageHref(page - 1) : ""}
+                  className={`rounded-md border px-3 py-1 text-sm ${hasPrev
+                      ? "border-blue-500 text-blue-600 hover:bg-blue-50"
+                      : "cursor-not-allowed border-gray-200 text-gray-400"
+                    }`}
+                >
+                  Previous
+                </a>
+
+                <div className="text-sm text-gray-600">
+                  Page <span className="font-medium">{page}</span>
+                </div>
+
+                <a
+                  aria-disabled={!hasNext}
+                  href={hasNext ? buildPageHref(page + 1) : ""}
+                  className={`rounded-md border px-3 py-1 text-sm ${hasNext
+                      ? "border-blue-500 text-blue-600 hover:bg-blue-50"
+                      : "cursor-not-allowed border-gray-200 text-gray-400"
+                    }`}
+                >
+                  Next
+                </a>
+              </div>
+            </>
           )}
         </main>
       </div>

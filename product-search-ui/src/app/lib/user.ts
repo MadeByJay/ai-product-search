@@ -8,7 +8,8 @@ export async function getOrSyncUserId(): Promise<string | null> {
   if (!email) return null;
 
   const origin = await getRequestOrigin();
-  const cookie = (await headers()).get("cookie") ?? ""; // forward auth cookies
+  const headerStore = await headers();
+  const cookie = headerStore.get("cookie") ?? "";
 
   const response = await fetch(`${origin}/api/users/sync`, {
     method: "POST",

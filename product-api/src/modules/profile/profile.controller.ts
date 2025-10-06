@@ -33,4 +33,21 @@ export class ProfileController {
   ) {
     return this.svc.updatePreferences(userId, prefs);
   }
+
+  /**
+   * GET /profile/:userId/saved/check?ids=a,b,c
+   * Returns { saved: ["a","c"] }
+   */
+  @Get(':userId/saved/check')
+  async checkSaved(
+    @Param('userId') userId: string,
+    @Query('ids') idsParam?: string,
+  ) {
+    const ids = (idsParam || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const saved = await this.svc.checkSaved(userId, ids);
+    return { saved };
+  }
 }

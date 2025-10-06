@@ -60,4 +60,19 @@ export class SavedItemsRepository {
         .execute();
     }
   }
+
+  async getExistingForUser(
+    userId: string,
+    productIds: string[],
+    trx?: Kysely<DB> | Transaction<DB>,
+  ): Promise<string[]> {
+    if (!productIds.length) return [];
+    const rows = await this.q(trx)
+      .selectFrom('saved_items')
+      .select(['product_id'])
+      .where('user_id', '=', userId)
+      .where('product_id', 'in', productIds)
+      .execute();
+    return rows.map((r) => r.product_id);
+  }
 }

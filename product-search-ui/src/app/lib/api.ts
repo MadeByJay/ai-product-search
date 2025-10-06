@@ -26,7 +26,8 @@ export async function searchProducts(
   query: string,
   limit: number,
   filters?: SearchFilters,
-  signal?: AbortSignal,
+  signal?: AbortSignal | null,
+  offset?: number,
 ): Promise<SearchResponse> {
   return httpJson<SearchResponse>(`${API_BASE}/search`, {
     method: "POST",
@@ -36,6 +37,7 @@ export async function searchProducts(
       limit,
       priceMax: filters?.priceMax,
       category: filters?.category,
+      offset: offset ?? 0,
     }),
     signal,
   });

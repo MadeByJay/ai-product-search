@@ -4,7 +4,7 @@ import { AnalyticsController } from './analytics.controller';
 import { DatabaseModule } from '../database/databases.module';
 import { AnalyticsRepository } from './repos/analytics.repository';
 import { KyselyModule } from '../database/kysely.module';
-import { ProductsRepository } from '../search/repos/products.repository';
+import { ProductsRepository } from '../products/repos/products.repository';
 
 @Module({
   imports: [DatabaseModule, KyselyModule],
@@ -12,4 +12,4 @@ import { ProductsRepository } from '../search/repos/products.repository';
   controllers: [AnalyticsController],
   exports: [AnalyticsService],
 })
-export class AnalyticsModule { }
+export class AnalyticsModule {}

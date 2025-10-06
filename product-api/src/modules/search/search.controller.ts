@@ -6,18 +6,21 @@ type SearchBody = {
   limit?: number;
   priceMax?: number;
   category?: string;
+  offset?: number;
 };
 
 @Controller()
 export class SearchController {
-  constructor(private readonly svc: SearchService) { }
+  constructor(private readonly svc: SearchService) {}
 
   @Post('search')
   async search(@Body() body: SearchBody) {
-    return this.svc.search(body.query, body.limit ?? 10, {
-      priceMax: body.priceMax,
-      category: body.category,
-    });
+    return this.svc.search(
+      body.query,
+      body.limit ?? 10,
+      { priceMax: body.priceMax, category: body.category },
+      body.offset ?? 0,
+    );
   }
 
   @Get('similar/:id')

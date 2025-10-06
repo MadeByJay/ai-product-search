@@ -15,10 +15,23 @@ export type Product = {
 
 @Injectable()
 export class ProductsRepository {
-  constructor(@Inject(KYSELY_DB) private readonly db: Kysely<DB>) { }
+  constructor(@Inject(KYSELY_DB) private readonly db: Kysely<DB>) {}
 
   private q(trx?: Kysely<DB> | Transaction<DB>) {
     return trx ?? this.db;
+  }
+
+  async findById(
+    id: string,
+    trx?: Kysely<DB> | Transaction<DB>,
+  ): Promise<Product | null> {
+    const q = this.q(trx);
+    const row = await q
+      .selectFrom('products')
+      .select(['id', 'title', 'description', 'price', 'category', 'image_url'])
+      .where('id', '=', id)
+      .executeTakeFirst();
+    return row ?? null;
   }
 
   async upsert(
@@ -63,27 +76,24 @@ export class ProductsRepository {
     filters: { priceMax?: number; category?: string },
     limit: number,
     trx?: Kysely<DB> | Transaction<DB>,
+    offset: number = 0,
   ): Promise<Product[]> {
     const q = this.q(trx);
-
     const vectorLiteral = `[${embedding.join(',')}]`;
     const vectorExpr = sql`CAST(${vectorLiteral} AS vector)`;
-    const safeLimit = clamp(limit, 1, 500);
 
     let qb = q
       .selectFrom('products')
       .select(['id', 'title', 'description', 'price', 'category', 'image_url']);
 
-    if (filters.priceMax != null) {
+    if (filters.priceMax != null)
       qb = qb.where('price', '<=', filters.priceMax);
-    }
-    if (filters.category) {
-      qb = qb.where('category', '=', filters.category);
-    }
+    if (filters.category) qb = qb.where('category', '=', filters.category);
 
     const rows = await qb
       .orderBy(sql`embedding <-> ${vectorExpr}`)
-      .limit(safeLimit)
+      .limit(Math.max(1, Math.min(500, limit)))
+      .offset(Math.max(0, offset))
       .execute();
 
     return rows;

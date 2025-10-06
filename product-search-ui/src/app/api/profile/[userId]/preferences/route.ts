@@ -92,8 +92,9 @@ export async function POST(
   if (forbid) return forbid;
 
   const contentType = request.headers.get("content-type") || "";
-  let outgoingBody: Record<string, unknown>;
+  const acceptJson = request.headers.get("x-accept-json") === "1";
 
+  let outgoingBody: Record<string, unknown>;
   if (contentType.includes("application/json")) {
     outgoingBody = await request.json();
   } else if (
@@ -105,7 +106,6 @@ export async function POST(
   } else {
     outgoingBody = await request.json().catch(() => ({}));
   }
-
   const pathOnly = `/profile/${userId}/preferences`;
   const signatureHeaders = buildInternalSignatureHeaders({
     method: "POST",
@@ -120,6 +120,17 @@ export async function POST(
     headers: { "content-type": "application/json", ...signatureHeaders },
     body: JSON.stringify(outgoingBody),
   });
+  // If the client explicitly wants JSON, pass upstream JSON through
+  if (acceptJson) {
+    const text = await upstreamResponse.text();
+    return new NextResponse(text, {
+      status: upstreamResponse.status,
+      headers: {
+        "content-type":
+          upstreamResponse.headers.get("content-type") ?? "application/json",
+      },
+    });
+  }
 
   // Extract a short, user-safe message if available
   let userSafeMessage: string;
