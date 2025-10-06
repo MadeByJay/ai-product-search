@@ -21,6 +21,14 @@ export async function GET(
   const ids = request.nextUrl.searchParams.get("ids") || "";
   const pathOnly = `/profile/${userId}/saved/check?ids=${encodeURIComponent(ids)}`;
 
+  if (!INTERNAL_SHARED_SECRET) {
+    // In production this should never be missing
+    return NextResponse.json(
+      { error: "Internal signature not configured" },
+      { status: 500 },
+    );
+  }
+
   const signatureHeaders = buildInternalSignatureHeaders({
     method: "GET",
     path: pathOnly.split("?")[0], // sign path not query
@@ -41,6 +49,8 @@ export async function GET(
     headers: {
       "content-type":
         upstream.headers.get("content-type") ?? "application/json",
+      "cache-control": "no-store, no-cache, must-revalidate, max-age=0",
+      pragma: "no-cache",
     },
   });
 }

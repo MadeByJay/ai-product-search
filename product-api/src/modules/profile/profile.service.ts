@@ -7,7 +7,7 @@ export class ProfileService {
   constructor(
     private readonly savedItems: SavedItemsRepository,
     private readonly userPrefs: UserPreferencesRepository,
-  ) {}
+  ) { }
 
   getSavedItems(userId: string) {
     return this.savedItems.getByUser(userId);
@@ -25,7 +25,7 @@ export class ProfileService {
     return this.userPrefs.upsert(userId, prefs);
   }
 
-  async checkSaved(userId: string, productIds: string[]): Promise<string[]> {
+  checkSaved(userId: string, productIds: string[]) {
     if (!productIds || productIds.length === 0) return [];
     return this.savedItems.getExistingForUser(userId, productIds);
   }

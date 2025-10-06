@@ -7,6 +7,9 @@ import { searchProducts } from "./lib/api";
 import { getOrSyncUserId } from "./lib/user";
 import { getRequestOrigin } from "./lib/origin";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * Compose a natural language query for the embeddings service while
  * honoring simple filters coming from the UI (category, priceMax).
@@ -199,10 +202,11 @@ export default async function Page({
                 <a
                   aria-disabled={!hasPrev}
                   href={hasPrev ? buildPageHref(page - 1) : ""}
-                  className={`rounded-md border px-3 py-1 text-sm ${hasPrev
+                  className={`rounded-md border px-3 py-1 text-sm ${
+                    hasPrev
                       ? "border-blue-500 text-blue-600 hover:bg-blue-50"
                       : "cursor-not-allowed border-gray-200 text-gray-400"
-                    }`}
+                  }`}
                 >
                   Previous
                 </a>
@@ -214,10 +218,11 @@ export default async function Page({
                 <a
                   aria-disabled={!hasNext}
                   href={hasNext ? buildPageHref(page + 1) : ""}
-                  className={`rounded-md border px-3 py-1 text-sm ${hasNext
+                  className={`rounded-md border px-3 py-1 text-sm ${
+                    hasNext
                       ? "border-blue-500 text-blue-600 hover:bg-blue-50"
                       : "cursor-not-allowed border-gray-200 text-gray-400"
-                    }`}
+                  }`}
                 >
                   Next
                 </a>

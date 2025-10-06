@@ -107,7 +107,6 @@ export default function ProductCard({
   const [toastKey, setToastKey] = useState<number>(0);
   const [toastKind, setToastKind] = useState<InlineToastKind | null>(null);
   const [toastMessage, setToastMessage] = useState<string>("");
-  console.log(product);
 
   const hasSale = useMemo(
     () =>

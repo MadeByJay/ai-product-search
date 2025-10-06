@@ -120,6 +120,7 @@ export async function POST(
     headers: { "content-type": "application/json", ...signatureHeaders },
     body: JSON.stringify(outgoingBody),
   });
+
   // If the client explicitly wants JSON, pass upstream JSON through
   if (acceptJson) {
     const text = await upstreamResponse.text();

@@ -4,6 +4,10 @@ import { getOrSyncUserId } from "@/app/lib/user";
 import SaveProductClient from "../../components/save-product-client";
 import { getRequestOrigin } from "@/app/lib/origin";
 import { headers } from "next/headers";
+import SimilarItemsSection from "./similar-section";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 async function fetchProduct(id: string): Promise<Product | null> {
   const headerStore = await headers();
@@ -13,7 +17,6 @@ async function fetchProduct(id: string): Promise<Product | null> {
     headers: { cookie },
     cache: "no-store",
   }).catch(() => null);
-  console.log(response);
 
   if (!response || !response.ok) return null;
 
@@ -77,7 +80,7 @@ export default async function ProductDetailPage({
           initialSaved={initialSaved}
         />
       </div>
-      {/* Optionally render "Similar Items" grid here */}
+      <SimilarItemsSection productId={id} />
     </div>
   );
 }

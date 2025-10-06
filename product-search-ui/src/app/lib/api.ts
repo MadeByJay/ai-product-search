@@ -32,6 +32,7 @@ export async function searchProducts(
   return httpJson<SearchResponse>(`${API_BASE}/search`, {
     method: "POST",
     headers: { "content-type": "application/json" },
+    cache: "no-store",
     body: JSON.stringify({
       query,
       limit,

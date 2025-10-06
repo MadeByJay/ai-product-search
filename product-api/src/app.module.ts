@@ -22,27 +22,8 @@ import { MetricsModule } from './modules/metrics/metrics.module';
     UsersModule,
     ProductsModule,
     MetricsModule,
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useFactory: async () => {
-        const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-        const keyvStore = new Keyv({
-          store: new KeyvRedis(redisUrl),
-          namespace: 'app-cache',
-        });
-
-        return {
-          store: keyvStore,
-          ttl: Number(process.env.CACHE_DEFAULT_TTL_MS ?? 60_000), // ms
-          max: Number(process.env.CACHE_MAX_ITEMS ?? 2000),
-        };
-      },
-    }),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

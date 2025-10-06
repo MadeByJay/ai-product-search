@@ -60,7 +60,6 @@ export class UsersService {
   }
 
   async syncUser(dto: { email: string; name?: string; avatar_url?: string }) {
-    console.log('hey');
     return this.uow.run(async (trx) => {
       const existing = await this.users.findByEmail(dto.email, trx);
       if (existing)

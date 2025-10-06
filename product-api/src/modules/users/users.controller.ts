@@ -24,7 +24,6 @@ export class UsersController {
 
   @Post('sync')
   async sync(@Body() dto: SyncUserDto) {
-    console.log('hit');
     return this.svc.syncUser(dto); // { id, email, name }
   }
 }

@@ -5,6 +5,7 @@ import { API_BASE, INTERNAL_SHARED_SECRET } from "@/app/lib/constants";
 import { forbidIfMismatchedUser } from "@/app/api/_authz";
 import { buildInternalSignatureHeaders } from "@/app/api/_internal-sign";
 
+// TODO - Use this helper function
 async function ensureSession() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -14,14 +15,6 @@ async function ensureSession() {
     };
   }
   return { session, res: null as any };
-}
-
-// Optional strict check helper: ensure the route userId matches the signed-in user's id.
-// If we store a user_id in session later, enforce it here.
-function ensureUserIdMatches(_session: any, _routeUserId: string) {
-  // For now we skip strict match. To enable later:
-  // if (session.user.id && session.user.id !== routeUserId) return 403;
-  return 200;
 }
 
 export async function GET(
@@ -53,6 +46,7 @@ export async function GET(
   });
 
   const upstreamBodyText = await upstreamResponse.text();
+
   return new NextResponse(upstreamBodyText, {
     status: upstreamResponse.status,
     headers: {
