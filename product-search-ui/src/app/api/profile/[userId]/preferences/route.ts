@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/route";
-import { API_BASE, INTERNAL_SHARED_SECRET } from "@/app/lib/constants";
+import { NEST_API_BASE, INTERNAL_SHARED_SECRET } from "@/app/lib/constants";
 import { forbidIfMismatchedUser } from "@/app/api/_authz";
 import { buildInternalSignatureHeaders } from "../../../_internal-sign";
 
@@ -54,16 +54,16 @@ export async function GET(
   const forbid = forbidIfMismatchedUser(session, userId);
   if (forbid) return forbid;
 
-  const pathOnly = `/profile/${userId}/preferences`;
+  const pathOnly = `api/profile/${userId}/preferences`;
   const signatureHeaders = buildInternalSignatureHeaders({
     method: "GET",
     path: pathOnly,
     body: "",
     userId,
-    sharedSecret: INTERNAL_SHARED_SECRET,
+    sharedSecret: INTERNAL_SHARED_SECRET!,
   });
 
-  const upstreamResponse = await fetch(`${API_BASE}${pathOnly}`, {
+  const upstreamResponse = await fetch(`${NEST_API_BASE}${pathOnly}`, {
     method: "GET",
     headers: { ...signatureHeaders },
     cache: "no-store",
@@ -106,16 +106,16 @@ export async function POST(
   } else {
     outgoingBody = await request.json().catch(() => ({}));
   }
-  const pathOnly = `/profile/${userId}/preferences`;
+  const pathOnly = `api/profile/${userId}/preferences`;
   const signatureHeaders = buildInternalSignatureHeaders({
     method: "POST",
     path: pathOnly,
     body: outgoingBody,
     userId,
-    sharedSecret: INTERNAL_SHARED_SECRET,
+    sharedSecret: INTERNAL_SHARED_SECRET!,
   });
 
-  const upstreamResponse = await fetch(`${API_BASE}${pathOnly}`, {
+  const upstreamResponse = await fetch(`${NEST_API_BASE}${pathOnly}`, {
     method: "POST",
     headers: { "content-type": "application/json", ...signatureHeaders },
     body: JSON.stringify(outgoingBody),

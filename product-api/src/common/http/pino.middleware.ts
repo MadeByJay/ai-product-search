@@ -27,7 +27,7 @@ export class PinoLoggerMiddleware implements NestMiddleware {
         return `${req.method} ${req.url} ${res.statusCode}`;
       },
       customErrorMessage(req, res, err) {
-        return `${req.method} ${req.url} ${res.statusCode} - ${err.message}`;
+        return `${req.method} ${req.url} ${res} - ${err.message}`;
       },
 
       // Keep request/response objects compact but include the id under req.

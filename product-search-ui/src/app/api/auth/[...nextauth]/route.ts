@@ -1,3 +1,4 @@
+import { NEST_API_BASE } from "@/app/lib/constants";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
@@ -26,9 +27,7 @@ export const authOptions: NextAuthOptions = {
       // If we have an email but no userId, sync with the API to get a stable user id
       const email = token.email as string | undefined;
       if (email && !(token as any).userId) {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE;
-
-        if (!apiBase) {
+        if (!NEST_API_BASE) {
           console.warn(
             "[auth] NEXT_PUBLIC_API_BASE is not set; cannot sync userId",
           );
@@ -36,7 +35,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const response = await fetch(`${apiBase}/users/sync`, {
+          const response = await fetch(`${NEST_API_BASE}/users/sync`, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({

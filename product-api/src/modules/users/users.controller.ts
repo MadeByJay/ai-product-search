@@ -4,7 +4,7 @@ import { SyncUserDto } from './dto/sync-user.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly svc: UsersService) {}
+  constructor(private readonly svc: UsersService) { }
 
   @Post()
   create(

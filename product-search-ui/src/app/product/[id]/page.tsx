@@ -1,4 +1,4 @@
-import { API_BASE } from "@/app/lib/constants";
+import { NEST_API_BASE } from "@/app/lib/constants";
 import { Product } from "@/app/lib/types";
 import { getOrSyncUserId } from "@/app/lib/user";
 import SaveProductClient from "../../components/save-product-client";
@@ -13,7 +13,7 @@ async function fetchProduct(id: string): Promise<Product | null> {
   const headerStore = await headers();
   const cookie = headerStore.get("cookie") ?? "";
 
-  const response = await fetch(`${API_BASE}/products/${id}`, {
+  const response = await fetch(`${NEST_API_BASE}/products/${id}`, {
     headers: { cookie },
     cache: "no-store",
   }).catch(() => null);
@@ -28,7 +28,7 @@ async function fetchSavedIdSet(userId: string): Promise<Set<string>> {
   const headerStore = await headers();
   const cookie = headerStore.get("cookie") ?? "";
 
-  const response = await fetch(`${origin}/api/profile/${userId}/saved`, {
+  const response = await fetch(`${NEST_API_BASE}/profile/${userId}/saved`, {
     headers: { cookie },
     cache: "no-store",
   });

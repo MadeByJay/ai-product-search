@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { forbidIfMismatchedUser } from "@/app/api/_authz";
 import { buildInternalSignatureHeaders } from "@/app/api/_internal-sign";
-import { API_BASE, INTERNAL_SHARED_SECRET } from "@/app/lib/constants";
+import { NEST_API_BASE, INTERNAL_SHARED_SECRET } from "@/app/lib/constants";
 
 export async function GET(
   request: NextRequest,
@@ -37,7 +37,7 @@ export async function GET(
     sharedSecret: INTERNAL_SHARED_SECRET,
   });
 
-  const upstream = await fetch(`${API_BASE}${pathOnly}`, {
+  const upstream = await fetch(`${NEST_API_BASE}${pathOnly}`, {
     method: "GET",
     headers: { ...signatureHeaders },
     cache: "no-store",

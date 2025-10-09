@@ -1,0 +1,101 @@
+version: "3.9"
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai-search-postgres
+    environment:
+      POSTGRES_DB: ai_search
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ai_search"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ai-search-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  product-api:
+    build:
+      context: ./product-api
+      dockerfile: Dockerfile
+    container_name: product-api
+    environment:
+      # Seed Script Toggle
+      # set to true if running for first time
+      SEED_ON_START: ${SEED_ON_START}
+      # Nest API
+      NEST_API_PORT: ${NEST_API_PORT}
+      NEST_API_PREFIX: ${NEST_API_PREFIX}
+      NODE_ENV: ${NODE_ENV}
+      # Postgres connection used by Kysely
+      VECTOR_DB_URL: ${VECTOR_DB_URL}
+      VECTOR_NAMESPACE: ${VECTOR_NAMESPACE}
+      # OpenAI config for embeddings and seed scripts
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      EMBED_MODEL: ${EMBED_MODEL}
+      # Internal signing (must match Next)
+      INTERNAL_SHARED_SECRET: ${INTERNAL_SHARED_SECRET}
+      INTERNAL_MAX_SKEW_MS: ${INTERNAL_MAX_SKEW_MS}
+      # Observability
+      LOG_LEVEL: ${LOG_LEVEL}
+      BUILD_VERSION: ${BUILD_VERSION}
+      BUILD_COMMIT: ${BUILD_COMMIT}
+      # Redis
+      REDIS_URL: ${REDIS_URL}
+      CACHE_DEFAULT_TTL_MS: ${CACHE_DEFAULT_TTL_MS}
+      CACHE_MAX_ITEMS: ${CACHE_MAX_ITEMS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+
+  product-search-ui:
+    build:
+      context: ./product-search-ui
+      dockerfile: Dockerfile
+      args:
+        # Provide the API base at build time for client bundles
+        NEST_API_BASE: http://product-api:3001/api
+    container_name: product-search-ui
+    environment:
+      # NextAuth base URL and secret
+      NEST_API_BASE: ${NEST_API_BASE}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
+      # OAuth
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      # Must match API
+      INTERNAL_SHARED_SECRET: ${INTERNAL_SHARED_SECRET}
+    depends_on:
+      product-api:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+volumes:
+  pg_data:
+  redis_data:

@@ -35,8 +35,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.use(cors());
-  await app.listen(Number(env.API_PORT));
+  await app.listen(Number(env.NEST_API_PORT));
 
-  baseLogger.info(`API listening on http://localhost:${env.API_PORT}`);
+  baseLogger.info(`API listening on http://localhost:${env.NEST_API_PORT}`);
 }
 bootstrap();

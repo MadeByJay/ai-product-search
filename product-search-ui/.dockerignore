@@ -1,0 +1,27 @@
+# Node/Next build artifacts
+node_modules
+.pnpm-store
+.next
+out
+
+# VCS / editor
+.git
+.gitignore
+*.log
+
+# Docker files
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+
+# Local env (compose will inject env at runtime/build)
+.env
+.env.local
+.env.*.local
+
+# Tests and storybook (if present)
+coverage
+.storybook
+**/*.test.*
+**/*.spec.*
+

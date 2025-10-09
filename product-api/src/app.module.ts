@@ -12,6 +12,7 @@ import Keyv from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MetricsModule } from './modules/metrics/metrics.module';
+import { ErrorLoggingInterceptor } from './common/interceptors/error-logging.interceptor';
 
 @Module({
   imports: [
@@ -24,6 +25,9 @@ import { MetricsModule } from './modules/metrics/metrics.module';
     MetricsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_INTERCEPTOR, useClass: ErrorLoggingInterceptor },
+  ],
 })
 export class AppModule {}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "./components/navbar";
 import { Providers } from "./providers";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "AI Product Search",
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-white text-gray-900">
         <Providers>
-          <Navbar />
+          <Suspense>
+            <Navbar />
+          </Suspense>
           <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
         </Providers>
       </body>

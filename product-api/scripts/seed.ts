@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
-import { PgVectorStore } from '../../src/utility/pg';
+import { PgVectorStore } from '../src/utility/pg';
 import { config } from 'dotenv';
 
 config();
@@ -14,7 +14,6 @@ const GENERATE_IMAGES =
   String(process.env.GENERATE_IMAGES || 'false').toLowerCase() === 'true';
 const IMAGE_SAMPLE = Number(process.env.IMAGE_SAMPLE || 50);
 const IMAGE_MODEL = process.env.IMAGE_MODEL || 'gpt-image-1'; // OpenAI image model
-// const IMAGE_SIZE = process.env.IMAGE_SIZE || '1024x1024'; // affects cost
 const IMAGE_SIZE = '1024x1024'; // affects cost - TODO - turn into enum
 const PLACEHOLDER = (seed: string) =>
   `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/400`;

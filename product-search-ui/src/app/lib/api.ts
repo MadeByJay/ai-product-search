@@ -1,4 +1,4 @@
-import { API_BASE } from "./constants";
+import { NEST_API_BASE } from "./constants";
 import {
   SearchResponse,
   Summary,
@@ -29,7 +29,7 @@ export async function searchProducts(
   signal?: AbortSignal | null,
   offset?: number,
 ): Promise<SearchResponse> {
-  return httpJson<SearchResponse>(`${API_BASE}/search`, {
+  return httpJson<SearchResponse>(`${NEST_API_BASE}/search`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     cache: "no-store",
@@ -45,7 +45,9 @@ export async function searchProducts(
 }
 
 export async function getSummary(signal?: AbortSignal): Promise<Summary> {
-  return httpJson<Summary>(`${API_BASE}/analytics/summary`, { signal });
+  return httpJson<Summary>(`${NEST_API_BASE}/analytics/summary`, {
+    signal,
+  });
 }
 
 export async function getTopQueries(
@@ -53,7 +55,7 @@ export async function getTopQueries(
   signal?: AbortSignal,
 ): Promise<TopQuery[]> {
   const data = await httpJson<{ items: TopQuery[] }>(
-    `${API_BASE}/analytics/top-queries?limit=${limit}`,
+    `${NEST_API_BASE}/analytics/top-queries?limit=${limit}`,
     { signal },
   );
   return data.items;
@@ -64,18 +66,18 @@ export async function getDailyCounts(
   signal?: AbortSignal,
 ): Promise<DailyQueryCount[]> {
   const data = await httpJson<{ items: DailyQueryCount[] }>(
-    `${API_BASE}/analytics/daily?days=${days}`,
+    `${NEST_API_BASE}/analytics/daily?days=${days}`,
     { signal },
   );
   return data.items;
 }
 
 export async function getSavedItems(userId: string): Promise<SavedItem[]> {
-  return httpJson<SavedItem[]>(`${API_BASE}/profile/${userId}/saved`);
+  return httpJson<SavedItem[]>(`${NEST_API_BASE}/profile/${userId}/saved`);
 }
 
 export async function toggleSaved(userId: string, productId: string) {
-  return httpJson(`${API_BASE}/profile/${userId}/saved`, {
+  return httpJson(`${NEST_API_BASE}/profile/${userId}/saved`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ productId }),
@@ -83,14 +85,16 @@ export async function toggleSaved(userId: string, productId: string) {
 }
 
 export async function getPreferences(userId: string): Promise<UserPreferences> {
-  return httpJson<UserPreferences>(`${API_BASE}/profile/${userId}/preferences`);
+  return httpJson<UserPreferences>(
+    `${NEST_API_BASE}/profile/${userId}/preferences`,
+  );
 }
 
 export async function updatePreferences(
   userId: string,
   prefs: UserPreferences,
 ) {
-  return httpJson(`${API_BASE}/profile/${userId}/preferences`, {
+  return httpJson(`${NEST_API_BASE}/profile/${userId}/preferences`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(prefs),

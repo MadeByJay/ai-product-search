@@ -1,17 +1,15 @@
-import { cookies, headers } from "next/headers";
-import { API_BASE } from "../lib/constants";
-import { getRequestOrigin } from "../lib/origin";
+import { headers } from "next/headers";
+import { NEXT_PUBLIC_API_BASE, NEXTAUTH_URL } from "../lib/constants";
 import { Product, UserPreferences } from "../lib/types";
 import { getOrSyncUserId } from "../lib/user";
 import ProfileToaster from "../components/profile-toaster";
 import PreferencesForm from "../components/preferences-form";
 
 async function fetchSaved(userId: string) {
-  const origin = await getRequestOrigin();
   const headerStore = await headers();
   const cookie = headerStore.get("cookie") ?? "";
 
-  const response = await fetch(`${origin}/api/profile/${userId}/saved`, {
+  const response = await fetch(`${NEXTAUTH_URL}/api/profile/${userId}/saved`, {
     cache: "no-store",
     headers: { cookie },
   });
@@ -20,14 +18,16 @@ async function fetchSaved(userId: string) {
 }
 
 async function fetchPrefs(userId: string) {
-  const origin = await getRequestOrigin();
   const headerStore = await headers();
   const cookie = headerStore.get("cookie") ?? "";
 
-  const response = await fetch(`${origin}/api/profile/${userId}/preferences`, {
-    cache: "no-store",
-    headers: { cookie },
-  });
+  const response = await fetch(
+    `${NEXTAUTH_URL}/api/profile/${userId}/preferences`,
+    {
+      cache: "no-store",
+      headers: { cookie },
+    },
+  );
 
   if (!response.ok) return {} as UserPreferences;
   return (await response.json()) as UserPreferences;

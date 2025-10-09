@@ -2,10 +2,10 @@ import { headers } from "next/headers";
 import HeroBanner from "../app/components/hero-banner";
 import FiltersSidebar from "./components/filters-sidebar";
 import ProductCard from "./components/product-card";
-import { Product, SearchResponse } from "./lib/types";
 import { searchProducts } from "./lib/api";
 import { getOrSyncUserId } from "./lib/user";
-import { getRequestOrigin } from "./lib/origin";
+import { NEST_API_BASE, NEXTAUTH_URL } from "./lib/constants";
+import { tracedFetch } from "./lib/fetch-trace";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -30,14 +30,14 @@ async function fetchSavedIdSetByIds(
 ): Promise<Set<string>> {
   if (!productIds.length) return new Set();
 
-  const origin = await getRequestOrigin();
   const headerStore = await headers();
   const cookieHeader = headerStore.get("cookie") ?? "";
 
   const params = new URLSearchParams({ ids: productIds.join(",") });
 
-  const response = await fetch(
-    `${origin}/api/profile/${userId}/saved/check?${params.toString()}`,
+  const response = await tracedFetch(
+    "saved-check (SSR)",
+    `${NEXTAUTH_URL}/profile/${userId}/saved/check?${params}`,
     {
       headers: { cookie: cookieHeader },
       cache: "no-store",

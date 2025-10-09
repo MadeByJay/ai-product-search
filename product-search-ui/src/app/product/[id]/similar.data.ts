@@ -1,5 +1,4 @@
-import { API_BASE } from "@/app/lib/constants";
-import { getRequestOrigin } from "@/app/lib/origin";
+import { NEST_API_BASE } from "@/app/lib/constants";
 import { Product } from "@/app/lib/types";
 import { headers } from "next/headers";
 
@@ -8,7 +7,7 @@ export async function fetchSimilarProducts(
   limit = 12,
 ): Promise<Product[]> {
   const response = await fetch(
-    `${API_BASE}/products/${productId}/similar?limit=${limit}`,
+    `${NEST_API_BASE}/products/${productId}/similar?limit=${limit}`,
     {
       cache: "no-store",
     },
@@ -26,13 +25,12 @@ export async function fetchSavedIdSetByIds(
 ): Promise<Set<string>> {
   if (!productIds.length) return new Set();
 
-  const origin = await getRequestOrigin();
   const headerStore = await headers();
   const cookie = headerStore.get("cookie") ?? "";
   const params = new URLSearchParams({ ids: productIds.join(",") });
 
   const response = await fetch(
-    `${origin}/api/profile/${userId}/saved/check?${params.toString()}`,
+    `${NEST_API_BASE}/profile/${userId}/saved/check?${params.toString()}`,
     {
       headers: { cookie: cookie },
       cache: "no-store",

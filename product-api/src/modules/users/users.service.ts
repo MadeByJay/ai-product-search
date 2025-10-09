@@ -14,7 +14,7 @@ export class UsersService {
     private readonly users: UsersRepository,
     private readonly prefs: UserPreferencesRepository,
     private readonly audit: AuditLogRepository,
-  ) {}
+  ) { }
 
   async createUserWithDefaults(dto: {
     id: string;
